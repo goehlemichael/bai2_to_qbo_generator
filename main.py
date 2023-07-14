@@ -36,8 +36,6 @@ def generate_csv_transaction_files(input_directory):
 
 
 def generate_qbo_transaction_files():
-    print(user_set_output_dir)
-    print(user_set_output_dir)
     input_csv_dir = generate_csv_transaction_files(input_directory=user_set_input_dir)
     output_files = user_set_output_dir
 
@@ -127,21 +125,21 @@ def select_input_directory():
     global user_set_input_dir
     user_set_input_dir = filedialog.askdirectory()
     input_dir_label.config(text=f"Input Directory: {user_set_input_dir}")
-    enable_copy_button()
+    enable_generate_button()
 
 
 def select_output_directory():
     global user_set_output_dir
     user_set_output_dir = filedialog.askdirectory()
     output_dir_label.config(text=f"Output Directory: {user_set_output_dir}")
-    enable_copy_button()
+    enable_generate_button()
 
 
-def enable_copy_button():
+def enable_generate_button():
     if user_set_input_dir and user_set_output_dir:
-        copy_button.config(state=tk.NORMAL)
+        generate_button.config(state=tk.NORMAL)
     else:
-        copy_button.config(state=tk.DISABLED)
+        generate_button.config(state=tk.DISABLED)
 
 
 try:
@@ -163,12 +161,12 @@ try:
     output_dir_label.pack()
 
     # Create a button to trigger the file copy
-    copy_button = tk.Button(window,
-                            text="generate qbo files",
-                            command=generate_qbo_transaction_files,
-                            state=tk.DISABLED
-                            )
-    copy_button.pack()
+    generate_button = tk.Button(window,
+                                text="generate qbo files",
+                                command=generate_qbo_transaction_files,
+                                state=tk.DISABLED
+                                )
+    generate_button.pack()
     # Start the main event loop
     window.mainloop()
 except Exception as e:
