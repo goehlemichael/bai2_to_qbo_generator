@@ -1,62 +1,54 @@
 import logging
 import sys
 import os
+import shutil
+import tempfile
+import tkinter as tk
+from tkinter import filedialog
 import re
 import csv
 from datetime import datetime
 import thinkbrq_bai_processor
 
 logging.basicConfig(stream=sys.stdout, level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
-bankid = os.environ['BANKID']
-acctid = os.environ['ACCTID']
+
+user_set_input_dir = ""
+user_set_output_dir = ""
 
 
-def generate_csv_transaction_files():
-    # define directories for input_bank_data and output_csv_txs
-    data_input_directory = "/app/input_bank_data"
-    output_dir = "/app/output_csv_txs"
-    logging.info(f'input directory is {data_input_directory}')
-    logging.info(f"output directory is {output_dir}")
+def generate_csv_transaction_files(input_directory):
+    input_files = input_directory
+    output_csv_dir = tempfile.mkdtemp()
 
-    # ensure input_bank_data directory exists
-    if not os.path.exists(data_input_directory) or not os.path.isdir(data_input_directory):
-        logging.critical(f"there is no {data_input_directory} directory")
-        return
-
-    files = os.listdir(data_input_directory)
+    files = os.listdir(input_files)
 
     sanitized_files = [file for file in files if re.match(r".*\.txt.*", file, re.IGNORECASE)]
 
     for file in sanitized_files:
         # Print the file name or perform any other operation
-        file_path = os.path.join(data_input_directory, file)
+        file_path = os.path.join(input_directory, file)
         thinkbrq_bai_processor.extract_bai_components(
             file_path,
             filename=file,
-            filepath=output_dir
+            filepath=output_csv_dir
         )
+    return output_csv_dir
 
 
 def generate_qbo_transaction_files():
-    # define directories for input_bank_data and output_csv_txs
-    output_csv_generated = "/app/output_csv_txs"
-    output_qbo_generated = "/app/output_qbo_txs"
-    logging.info(f"input directory {output_csv_generated}")
-    logging.info(f"output directory {output_qbo_generated}")
+    print(user_set_output_dir)
+    print(user_set_output_dir)
+    input_csv_dir = generate_csv_transaction_files(input_directory=user_set_input_dir)
+    output_files = user_set_output_dir
 
-    # ensure output_qbo_txs directory exists
-    if not os.path.exists(output_qbo_generated) or not os.path.isdir(output_qbo_generated):
-        logging.critical(f"there is no {output_qbo_generated} directory")
-        return
-
-    files = os.listdir(output_csv_generated)
+    files = os.listdir(input_csv_dir)
 
     sanitized_csv_files = [file for file in files if re.match(r".+\.csv$", file, re.IGNORECASE)]
 
     for file in sanitized_csv_files:
         filename = file
-        with open('{}/{}'.format(output_csv_generated, filename), 'r') as csvfile, \
-                open('{}/{}.qbo'.format(output_qbo_generated, filename), 'w') as ofxfile:
+        with open('{}/{}'.format(input_csv_dir, filename), 'r') as csvfile, \
+                open('{}/{}.qbo'.format(output_files, filename), 'w') as ofxfile:
             reader = csv.DictReader(csvfile)
             ofxfile.write("OFXHEADER:100\n")
             ofxfile.write("DATA:OFXSGML\n")
@@ -68,7 +60,6 @@ def generate_qbo_transaction_files():
             ofxfile.write("OLDFILEUID:NONE\n")
             ofxfile.write("NEWFILEUID:NONE\n\n")
 
-            # Write the OFX body
             ofxfile.write("<OFX>\n")
             ofxfile.write("<SIGNONMSGSRSV1>\n")
             ofxfile.write("<SONRS>\n")
@@ -94,8 +85,8 @@ def generate_qbo_transaction_files():
             ofxfile.write("<CURDEF>USD\n")
 
             ofxfile.write("<BANKACCTFROM>\n")
-            ofxfile.write(f"<BANKID>{bankid}\n")
-            ofxfile.write(f"<ACCTID>{acctid}\n")
+            ofxfile.write("<BANKID>123456789\n")
+            ofxfile.write("<ACCTID>9876543210\n")
             ofxfile.write("<ACCTTYPE>CHECKING\n")
             ofxfile.write("</BANKACCTFROM>\n")
 
@@ -123,16 +114,62 @@ def generate_qbo_transaction_files():
             ofxfile.write("<BALAMT>0.00\n")
             ofxfile.write("<DTASOF>{0}.000[-4]\n".format(formatted_date))
 
-            # Write the OFX footer
             ofxfile.write("</LEDGERBAL>\n")
             ofxfile.write("</STMTRS>\n")
             ofxfile.write("</STMTTRNRS>\n")
             ofxfile.write("</BANKMSGSRSV1>\n")
             ofxfile.write("</OFX>\n")
 
+    shutil.rmtree(input_csv_dir)
+
+
+def select_input_directory():
+    global user_set_input_dir
+    user_set_input_dir = filedialog.askdirectory()
+    input_dir_label.config(text=f"Input Directory: {user_set_input_dir}")
+    enable_copy_button()
+
+
+def select_output_directory():
+    global user_set_output_dir
+    user_set_output_dir = filedialog.askdirectory()
+    output_dir_label.config(text=f"Output Directory: {user_set_output_dir}")
+    enable_copy_button()
+
+
+def enable_copy_button():
+    if user_set_input_dir and user_set_output_dir:
+        copy_button.config(state=tk.NORMAL)
+    else:
+        copy_button.config(state=tk.DISABLED)
+
 
 try:
-    generate_csv_transaction_files()
-    generate_qbo_transaction_files()
+    window = tk.Tk()
+    window.title('Convert to QBO')
+    window.geometry('800x200')
+    # Configure the window to accept file drops
+    input_dir_button = tk.Button(window, text="Select Input Directory", command=select_input_directory)
+    input_dir_button.pack()
+
+    output_dir_button = tk.Button(window, text="Select Output Directory", command=select_output_directory)
+    output_dir_button.pack()
+
+    # Create labels to display the selected input and output directories
+    input_dir_label = tk.Label(window, text="Input Directory: ")
+    input_dir_label.pack()
+
+    output_dir_label = tk.Label(window, text="Output Directory: ")
+    output_dir_label.pack()
+
+    # Create a button to trigger the file copy
+    copy_button = tk.Button(window,
+                            text="generate qbo files",
+                            command=generate_qbo_transaction_files,
+                            state=tk.DISABLED
+                            )
+    copy_button.pack()
+    # Start the main event loop
+    window.mainloop()
 except Exception as e:
     logging.critical(f'something bad happened {e}')

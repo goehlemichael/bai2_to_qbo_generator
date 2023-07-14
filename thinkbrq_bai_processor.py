@@ -2,6 +2,7 @@ import sys
 import csv
 from bai2 import bai2
 import logging
+from tkinter import messagebox
 
 logging.basicConfig(stream=sys.stdout, level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -162,6 +163,7 @@ def extract_bai_components(f, filename='', filepath='.', **kwargs):
 def create_csv_file(filename, filepath, date, transactions, summary, **kwargs):
     if not transactions:
         logging.warning(f"no transactions {filename}")
+        messagebox.showinfo("Alert", f"no transactions {filename}")
         return
     for transaction in transactions:
         # append date column to the object
