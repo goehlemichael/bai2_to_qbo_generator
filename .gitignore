@@ -1,0 +1,12 @@
+venv
+.idea
+__pycache__/
+output_csv_txs/
+input_bank_data/*
+output_csv_txs/*
+output_qbo_txs/*
+input
+output
+build
+dist
+thinkbai2.spec
