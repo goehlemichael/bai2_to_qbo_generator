@@ -8,7 +8,7 @@ from tkinter import filedialog
 import re
 import csv
 from datetime import datetime
-import thinkbrq_bai_processor
+import bai_processor
 
 logging.basicConfig(stream=sys.stdout, level=logging.WARN, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -27,7 +27,7 @@ def generate_csv_transaction_files(input_directory):
     for file in sanitized_files:
         # Print the file name or perform any other operation
         file_path = os.path.join(input_directory, file)
-        thinkbrq_bai_processor.extract_bai_components(
+        bai_processor.extract_bai_components(
             file_path,
             filename=file,
             filepath=output_csv_dir
