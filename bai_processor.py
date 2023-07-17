@@ -17,7 +17,7 @@ def process_account_summary(summary):
         'Fund Type': summary.funds_type,
         'Availability': summary.availability
     }
-    logging.debug(f"summary data: {summary_data}")
+    logging.debug(f'summary data: {summary_data}')
     return summary_data
 
 
@@ -27,7 +27,7 @@ def process_account_header(header):
     for account_summary in summary_items:
         summary_data = process_account_summary(account_summary)
         summary_list.append(summary_data)
-    logging.debug(f"summary list: {summary_list}")
+    logging.debug(f'summary list: {summary_list}')
     return summary_list
 
 
@@ -49,7 +49,7 @@ def process_account_transactions(identifier, transactions):
             'Text': transaction.text
         }
         list_transactions.append(transaction_dict)
-    logging.debug(f"list transactions: {list_transactions}")
+    logging.debug(f'list transactions: {list_transactions}')
     return list_transactions
 
 
@@ -64,7 +64,7 @@ def process_accounts(accounts):
         tr_list = process_account_transactions(account_identifier, account_transactions)
         list_transactions = list_transactions + tr_list
         summary_accounts = summary_accounts + summary_list
-    logging.debug(f"Process Accounts: list transactions - {list_transactions} summary accounts - {summary_accounts}")
+    logging.debug(f'Process Accounts: list transactions - {list_transactions} summary accounts - {summary_accounts}')
     return list_transactions, summary_accounts
 
 
@@ -77,7 +77,7 @@ def process_bai_header(bai_header):
         'Creation Time': bai_header.creation_time.strftime('%H:%M') if bai_header.creation_time is not None else None,
         'File ID': bai_header.file_id,
     }
-    logging.debug(f"process bai header: {header_dict}")
+    logging.debug(f'process bai header: {header_dict}')
     return header_dict
 
 
@@ -92,7 +92,7 @@ def process_bai_grp_header(grp_header):
         'As of Date Modifier': grp_header.as_of_date_modifier.name if grp_header.as_of_date_modifier is not None else None,
 
     }
-    logging.debug(f"process bai grp header: {grp_dict_head}")
+    logging.debug(f'process bai grp header: {grp_dict_head}')
     return grp_dict_head
 
 
@@ -108,11 +108,11 @@ def process_file_data(file_data):
     # Accounts
     accounts = bai_file_group.children
     list_transactions, summary_accounts = process_accounts(accounts)
-    logging.debug(f"process file data:"
-                  f"header dict - {header_dict}"
-                  f"grp header dict - {grp_header_dict}"
-                  f"list transactions {list_transactions}"
-                  f"summary accounts {summary_accounts}"
+    logging.debug(f'process file data:'
+                  f'header dict - {header_dict}'
+                  f'grp header dict - {grp_header_dict}'
+                  f'list transactions {list_transactions}'
+                  f'summary accounts {summary_accounts}'
                   )
     return header_dict, grp_header_dict, list_transactions, summary_accounts
 
@@ -125,10 +125,10 @@ def parse_from_file(f):
             for line in lines:
                 pr_line = line.strip()
                 proc_lines.append(pr_line)
-            logging.debug(f"data parsed from file {proc_lines}")
+            logging.debug(f'data parsed from file {proc_lines}')
             return bai2.parse_from_lines(proc_lines)
     except UnicodeDecodeError:
-        logging.warning(f"Invalid UTF-8 encoding in file: {f}")
+        logging.warning(f'Invalid UTF-8 encoding in file: {f}')
 
 
 def extract_bai_components(f, filename='', filepath='.'):
@@ -136,12 +136,12 @@ def extract_bai_components(f, filename='', filepath='.'):
     header_dict, grp_header_dict, list_transactions, summary_accounts = process_file_data(file_data)
     date = grp_header_dict['As of date']
     time = grp_header_dict['As of time']
-    logging.debug(f"header dict - {header_dict},"
-                  f"grp header dict - {grp_header_dict},"
-                  f"list transactions - {list_transactions},"
-                  f"summary accounts - {summary_accounts},"
-                  f"date - {date},"
-                  f"time - {time}"
+    logging.debug(f'header dict - {header_dict},'
+                  f'grp header dict - {grp_header_dict},'
+                  f'list transactions - {list_transactions},'
+                  f'summary accounts - {summary_accounts},'
+                  f'date - {date},'
+                  f'time - {time}'
                   )
 
     create_csv_file(filename,
@@ -156,19 +156,19 @@ def extract_bai_components(f, filename='', filepath='.'):
 
 def create_csv_file(filename, filepath, date, transactions, summary):
     if not transactions:
-        logging.warning(f"No Transactions in {filename}")
-        messagebox.showinfo("Alert", f"No Transactions in {filename}")
+        logging.warning(f'No Transactions in {filename}')
+        messagebox.showinfo('Alert', f'No Transactions in {filename}')
         return
     for transaction in transactions:
         # append date column to the object
         transaction['Date'] = date
         # include decimal in the amount value
         no_decimal = transaction['Amount']
-        yes_decimal = str(no_decimal)[:-2] + "." + str(no_decimal)[-2:]
+        yes_decimal = str(no_decimal)[:-2] + '.' + str(no_decimal)[-2:]
         transaction['Amount'] = yes_decimal
         # append a negative sign to credit type transactions
         if transaction['Transaction'] == 'debit':
-            transaction['Amount'] = "-" + transaction['Amount']
+            transaction['Amount'] = '-' + transaction['Amount']
 
     if len(transactions) > 0:
         with open('{}/transactions-{}.csv'.format(filepath,
