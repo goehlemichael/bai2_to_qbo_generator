@@ -33,7 +33,6 @@ def process_account_header(header):
 
 def process_account_transactions(identifier, transactions):
     list_transactions = []
-    # TransactionDetail
     for transaction in transactions:
         transaction_dict = {
             'Customer Account Number': identifier.customer_account_number,
@@ -59,9 +58,8 @@ def process_accounts(accounts):
     summary_accounts = []
     for account in accounts:
         account_identifier = account.header
-        account_trailer = account.trailer
+        # account_trailer = account.trailer
         account_transactions = account.children
-        # Process Entities
         summary_list = process_account_header(account_identifier)
         tr_list = process_account_transactions(account_identifier, account_transactions)
         list_transactions = list_transactions + tr_list
@@ -101,12 +99,11 @@ def process_bai_grp_header(grp_header):
 def process_file_data(file_data):
     # Extract Header, Trailer, Transaction Data
     bai_file_header = file_data.header
-    bai_file_trailer = file_data.trailer
+    # bai_file_trailer = file_data.trailer
     header_dict = process_bai_header(bai_file_header)
-    # File Group
     bai_file_group = file_data.children[0]
     bai_file_grp_header = bai_file_group.header
-    bai_file_grp_trailer = bai_file_group.trailer
+    # bai_file_grp_trailer = bai_file_group.trailer
     grp_header_dict = process_bai_grp_header(bai_file_grp_header)
     # Accounts
     accounts = bai_file_group.children
@@ -120,23 +117,22 @@ def process_file_data(file_data):
     return header_dict, grp_header_dict, list_transactions, summary_accounts
 
 
-def parse_from_file(f, **kwargs):
+def parse_from_file(f):
     try:
         with open(f, 'r', encoding='utf-8') as bai_file:
             lines = bai_file.readlines()
             proc_lines = []
             for line in lines:
-                # cleanup lines and remove whitespaces
                 pr_line = line.strip()
                 proc_lines.append(pr_line)
-            logging.debug(f"data parsed from file{proc_lines}")
-            return bai2.parse_from_lines(proc_lines, **kwargs)
+            logging.debug(f"data parsed from file {proc_lines}")
+            return bai2.parse_from_lines(proc_lines)
     except UnicodeDecodeError:
         logging.warning(f"Invalid UTF-8 encoding in file: {f}")
 
 
-def extract_bai_components(f, filename='', filepath='.', **kwargs):
-    file_data = parse_from_file(f, **kwargs)
+def extract_bai_components(f, filename='', filepath='.'):
+    file_data = parse_from_file(f)
     header_dict, grp_header_dict, list_transactions, summary_accounts = process_file_data(file_data)
     date = grp_header_dict['As of date']
     time = grp_header_dict['As of time']
@@ -145,25 +141,23 @@ def extract_bai_components(f, filename='', filepath='.', **kwargs):
                   f"list transactions - {list_transactions},"
                   f"summary accounts - {summary_accounts},"
                   f"date - {date},"
-                  f"time - {time},"
-                  f"**kwargs"
+                  f"time - {time}"
                   )
 
     create_csv_file(filename,
                     filepath,
                     date=date,
                     transactions=list_transactions,
-                    summary=summary_accounts,
-                    **kwargs
+                    summary=summary_accounts
                     )
 
     return header_dict, grp_header_dict, list_transactions, summary_accounts
 
 
-def create_csv_file(filename, filepath, date, transactions, summary, **kwargs):
+def create_csv_file(filename, filepath, date, transactions, summary):
     if not transactions:
-        logging.warning(f"no transactions {filename}")
-        messagebox.showinfo("Alert", f"no transactions {filename}")
+        logging.warning(f"No Transactions in {filename}")
+        messagebox.showinfo("Alert", f"No Transactions in {filename}")
         return
     for transaction in transactions:
         # append date column to the object

@@ -146,28 +146,25 @@ try:
     window = tk.Tk()
     window.title('Convert to QBO')
     window.geometry('800x200')
-    # Configure the window to accept file drops
     input_dir_button = tk.Button(window, text="Select Input Directory", command=select_input_directory)
     input_dir_button.pack()
 
     output_dir_button = tk.Button(window, text="Select Output Directory", command=select_output_directory)
     output_dir_button.pack()
 
-    # Create labels to display the selected input and output directories
     input_dir_label = tk.Label(window, text="Input Directory: ")
     input_dir_label.pack()
 
     output_dir_label = tk.Label(window, text="Output Directory: ")
     output_dir_label.pack()
 
-    # Create a button to trigger the file copy
     generate_button = tk.Button(window,
                                 text="generate qbo files",
                                 command=generate_qbo_transaction_files,
                                 state=tk.DISABLED
                                 )
     generate_button.pack()
-    # Start the main event loop
+
     window.mainloop()
 except Exception as e:
     logging.critical(f'something bad happened {e}')
