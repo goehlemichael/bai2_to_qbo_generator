@@ -4,7 +4,7 @@ import os
 import shutil
 import tempfile
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, simpledialog
 import re
 import csv
 from datetime import datetime
@@ -14,6 +14,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.WARN, format='%(asctime)s -
 
 user_set_input_dir = ''
 user_set_output_dir = ''
+user_set_bank_id = ''
+user_set_acct_id = ''
 
 
 def generate_csv_transaction_files(input_directory):
@@ -83,8 +85,8 @@ def generate_qbo_transaction_files():
             ofxfile.write('<CURDEF>USD\n')
 
             ofxfile.write('<BANKACCTFROM>\n')
-            ofxfile.write('<BANKID>123456789\n')
-            ofxfile.write('<ACCTID>9876543210\n')
+            ofxfile.write('<BANKID>{0}\n'.format(user_set_bank_id))
+            ofxfile.write('<ACCTID>{0}\n'.format(user_set_acct_id))
             ofxfile.write('<ACCTTYPE>CHECKING\n')
             ofxfile.write('</BANKACCTFROM>\n')
 
@@ -135,6 +137,22 @@ def select_output_directory():
     enable_generate_button()
 
 
+def select_bank_id():
+    global user_set_bank_id
+    user_set_bank_id = simpledialog.askstring("Input", "Routing Number:")
+    input_routing.config(text=f'Enter Bank Routing Number: {user_set_bank_id}')
+    if user_set_bank_id:
+        enable_generate_button()
+
+
+def select_acct_id():
+    global user_set_acct_id
+    user_set_acct_id = simpledialog.askstring("Input", "Bank Account Number:")
+    input_bank.config(text=f'Enter Bank Account Number: {user_set_acct_id}')
+    if user_set_acct_id:
+        enable_generate_button()
+
+
 def enable_generate_button():
     if user_set_input_dir and user_set_output_dir:
         generate_button.config(state=tk.NORMAL)
@@ -145,7 +163,7 @@ def enable_generate_button():
 try:
     window = tk.Tk()
     window.title('Convert to QBO')
-    window.geometry('800x200')
+    window.geometry('800x800')
     input_dir_button = tk.Button(window, text='Select Input Directory', command=select_input_directory)
     input_dir_button.pack()
 
@@ -157,6 +175,18 @@ try:
 
     output_dir_label = tk.Label(window, text='Output Directory: ')
     output_dir_label.pack()
+
+    bank_id_button = tk.Button(window, text='Enter routing', command=select_bank_id)
+    bank_id_button.pack()
+
+    input_routing = tk.Label(window, text='routing # ')
+    input_routing.pack()
+
+    acct_id_button = tk.Button(window, text='Enter Bank Account', command=select_acct_id)
+    acct_id_button.pack()
+
+    input_bank = tk.Label(window, text='bank acct # ')
+    input_bank.pack()
 
     generate_button = tk.Button(window,
                                 text='generate qbo files',
