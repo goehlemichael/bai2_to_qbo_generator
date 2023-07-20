@@ -4,7 +4,7 @@ import os
 import shutil
 import tempfile
 import tkinter as tk
-from tkinter import filedialog, simpledialog
+from tkinter import filedialog, simpledialog, messagebox
 import re
 import csv
 from datetime import datetime
@@ -139,18 +139,30 @@ def select_output_directory():
 
 def select_bank_id():
     global user_set_bank_id
-    user_set_bank_id = simpledialog.askstring("Input", "Routing Number:")
-    input_routing.config(text=f'Enter Bank Routing Number: {user_set_bank_id}')
-    if user_set_bank_id:
-        enable_generate_button()
+    while True:
+        user_set_bank_id = simpledialog.askstring("Input", "Enter routing:", initialvalue=user_set_bank_id)
+        if user_set_bank_id is None:  # User clicked Cancel
+            break
+        elif user_set_bank_id.isdigit():
+            input_routing.config(text=f'routing entered: {user_set_bank_id}')
+            enable_generate_button()
+            break
+        else:
+            tk.messagebox.showerror("Error", "Please enter a valid numeric routing number")
 
 
 def select_acct_id():
     global user_set_acct_id
-    user_set_acct_id = simpledialog.askstring("Input", "Bank Account Number:")
-    input_bank.config(text=f'Enter Bank Account Number: {user_set_acct_id}')
-    if user_set_acct_id:
-        enable_generate_button()
+    while True:
+        user_set_acct_id = simpledialog.askstring("Input", "Enter bank acct:", initialvalue=user_set_acct_id)
+        if user_set_acct_id is None:  # User clicked Cancel
+            break
+        elif user_set_acct_id.isdigit():
+            input_bank.config(text=f'banking entered: {user_set_acct_id}')
+            enable_generate_button()
+            break
+        else:
+            tk.messagebox.showerror("Error", "Please enter a valid numeric bank account")
 
 
 def enable_generate_button():
